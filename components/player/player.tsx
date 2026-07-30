@@ -58,7 +58,7 @@ function CampfireObject({ position, onClick }: { position: [number, number, numb
         <sphereGeometry args={[0.3, 5, 3]} />
         <meshBasicMaterial color="#ff3300" transparent opacity={0.3} />
       </mesh>
-      <pointLight ref={lightRef} position={[0, 1, 0]} color="#ff6600" intensity={3} distance={18} decay={2} />
+      <pointLight ref={lightRef} position={[0, 1, 0]} color="#ff6600" intensity={5} distance={30} decay={1.5} />
     </group>
   )
 }

@@ -1092,6 +1092,23 @@ export function Animals() {
     return result
   }, [])
 
+  const wolfSpawns = useMemo(() => {
+    const result: { id: number; pos: [number, number, number] }[] = []
+    for (let i = 0; i < 3; i++) {
+      const x = (Math.random() - 0.5) * 200
+      const z = (Math.random() - 0.5) * 200
+      const inWater = waterZones.some((zone) => {
+        const dx = x - zone.x
+        const dz = z - zone.z
+        return Math.sqrt(dx * dx + dz * dz) < zone.radius
+      })
+      if (inWater) continue
+      if (Math.abs(x) < 35 && Math.abs(z) < 35) continue // Spawn far from center
+      result.push({ id: i, pos: [x, 0, z] })
+    }
+    return result
+  }, [])
+
   return (
     <group>
       {rabbits.map((rabbit) => (
@@ -1123,6 +1140,211 @@ export function Animals() {
       {foxSpawns.map((fox) => (
         <Fox key={`fox-${fox.id}`} id={fox.id} startPos={fox.pos} />
       ))}
+      {wolfSpawns.map((wolf) => (
+        <Wolf key={`wolf-${wolf.id}`} id={wolf.id} startPos={wolf.pos} />
+      ))}
+    </group>
+  )
+}
+
+
+// Wolf — hunts at night, aggressive, attacks player
+function Wolf({ startPos, id }: { startPos: [number, number, number]; id: number }) {
+  const groupRef = useRef<THREE.Group>(null)
+  const [alive, setAlive] = useState(true)
+
+  const state = useRef({
+    pos: new THREE.Vector3(...startPos),
+    target: new THREE.Vector3(...startPos),
+    speed: 0,
+    idle: true,
+    idleTimer: 2 + Math.random() * 3,
+    walkCycle: 0,
+    hunting: false,
+    attackCooldown: 0,
+  })
+
+  useFrame((_, delta) => {
+    if (!groupRef.current || !alive) return
+    const s = state.current
+    const playerPos = useGameStore.getState().playerPos
+
+    const dx = playerPos[0] - s.pos.x
+    const dz = playerPos[2] - s.pos.z
+    const distToPlayer = Math.sqrt(dx * dx + dz * dz)
+
+    s.attackCooldown -= delta
+
+    // Wolves only active at night (8pm - 6am)
+    const hour = useGameStore.getState().hour
+    const isNight = hour >= 20 || hour < 6
+    const playerNearFire = useGameStore.getState().nearFire
+    const playerInShelter = useGameStore.getState().nearShelter
+
+    if (!isNight) {
+      // Daytime — wolves wander passively, don't hunt
+      s.hunting = false
+      if (distToPlayer < 12) {
+        // Flee from player during day
+        s.idle = false
+        s.target.set(
+          THREE.MathUtils.clamp(s.pos.x - dx * 2, -110, 110),
+          0,
+          THREE.MathUtils.clamp(s.pos.z - dz * 2, -110, 110)
+        )
+        s.speed = 5
+      }
+    } else if (playerNearFire || playerInShelter) {
+      // Night but player is safe — wolves circle at distance
+      s.hunting = false
+      if (distToPlayer < 15) {
+        const circleAngle = Math.atan2(dz, dx) + 0.02
+        s.target.set(
+          playerPos[0] + Math.cos(circleAngle) * 12,
+          0,
+          playerPos[2] + Math.sin(circleAngle) * 12
+        )
+        s.speed = 3
+        s.idle = false
+      }
+    } else if (distToPlayer < 25) {
+      // Night, no protection — hunt!
+      s.hunting = true
+      s.idle = false
+      s.target.set(playerPos[0], 0, playerPos[2])
+      s.speed = 7
+    } else {
+      s.hunting = false
+    }
+
+    // Attack when close (only at night, only if not protected)
+    if (isNight && !playerNearFire && !playerInShelter && distToPlayer < 2.5 && s.attackCooldown <= 0) {
+      s.attackCooldown = 2
+      const store = useGameStore.getState()
+      useGameStore.setState({ health: Math.max(0, store.health - 12) })
+      store.log('A wolf bit you! -12 health')
+    }
+
+    if (s.idle) {
+      s.idleTimer -= delta
+      s.speed = 0
+      s.walkCycle = 0
+      if (s.idleTimer <= 0) {
+        s.idle = false
+        s.target.set(
+          THREE.MathUtils.clamp(s.pos.x + (Math.random() - 0.5) * 20, -110, 110),
+          0,
+          THREE.MathUtils.clamp(s.pos.z + (Math.random() - 0.5) * 20, -110, 110)
+        )
+        s.speed = 3
+      }
+    }
+
+    // Move toward target
+    if (s.speed > 0) {
+      const toTarget = new THREE.Vector3().subVectors(s.target, s.pos)
+      const dist = toTarget.length()
+      if (dist < 1 && !s.hunting) {
+        s.idle = true
+        s.idleTimer = 2 + Math.random() * 4
+        s.speed = 0
+      } else if (dist > 0.5) {
+        toTarget.normalize()
+        const nextX = s.pos.x + toTarget.x * s.speed * delta
+        const nextZ = s.pos.z + toTarget.z * s.speed * delta
+        if (!isInsideWater(nextX, nextZ)) {
+          s.pos.x = nextX
+          s.pos.z = nextZ
+          groupRef.current.rotation.y = Math.atan2(toTarget.x, toTarget.z)
+          s.walkCycle += delta * (s.hunting ? 10 : 6)
+        } else {
+          s.idle = true
+          s.idleTimer = 1
+          s.speed = 0
+        }
+      }
+    }
+
+    s.pos.y = s.speed > 0 ? Math.abs(Math.sin(s.walkCycle)) * 0.05 : 0
+    groupRef.current.position.copy(s.pos)
+  })
+
+  const handleClick = useCallback((e: any) => {
+    e.stopPropagation()
+    if (!alive) return
+    const st = useGameStore.getState()
+    const hasBow = st.hasItem('bow') && st.hasItem('arrows')
+    if (!hasBow) {
+      st.log('Need a bow and arrows to kill a wolf.')
+      return
+    }
+    st.removeItem('arrows', 1)
+    useGameStore.setState({ playerAction: 'shooting' })
+    setTimeout(() => useGameStore.setState({ playerAction: 'idle' }), 500)
+    setAlive(false)
+    st.log('Killed the wolf!')
+    setTimeout(() => setAlive(true), 180000)
+  }, [alive])
+
+  if (!alive) return null
+
+  return (
+    <group ref={groupRef} position={startPos} onClick={handleClick}>
+      {/* Body */}
+      <mesh position={[0, 0.4, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <capsuleGeometry args={[0.15, 0.5, 4, 6]} />
+        <meshStandardMaterial color="#5a5a5a" roughness={0.9} flatShading />
+      </mesh>
+      {/* Head */}
+      <mesh position={[0, 0.5, 0.35]} castShadow>
+        <sphereGeometry args={[0.12, 6, 5]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      </mesh>
+      {/* Snout */}
+      <mesh position={[0, 0.47, 0.47]} castShadow>
+        <boxGeometry args={[0.08, 0.06, 0.12]} />
+        <meshStandardMaterial color="#3a3a3a" roughness={0.9} flatShading />
+      </mesh>
+      {/* Ears */}
+      <mesh position={[0.06, 0.6, 0.32]} castShadow>
+        <coneGeometry args={[0.03, 0.07, 4]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      </mesh>
+      <mesh position={[-0.06, 0.6, 0.32]} castShadow>
+        <coneGeometry args={[0.03, 0.07, 4]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      </mesh>
+      {/* Eyes — yellow */}
+      <mesh position={[0.05, 0.52, 0.43]}>
+        <sphereGeometry args={[0.02, 4, 4]} />
+        <meshStandardMaterial color="#c0a020" roughness={0.3} />
+      </mesh>
+      <mesh position={[-0.05, 0.52, 0.43]}>
+        <sphereGeometry args={[0.02, 4, 4]} />
+        <meshStandardMaterial color="#c0a020" roughness={0.3} />
+      </mesh>
+      {/* Legs */}
+      <mesh position={[0.08, 0.15, 0.2]} castShadow>
+        <capsuleGeometry args={[0.03, 0.2, 3, 4]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      </mesh>
+      <mesh position={[-0.08, 0.15, 0.2]} castShadow>
+        <capsuleGeometry args={[0.03, 0.2, 3, 4]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      </mesh>
+      <mesh position={[0.08, 0.15, -0.15]} castShadow>
+        <capsuleGeometry args={[0.03, 0.2, 3, 4]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      </mesh>
+      <mesh position={[-0.08, 0.15, -0.15]} castShadow>
+        <capsuleGeometry args={[0.03, 0.2, 3, 4]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      </mesh>
+      {/* Tail */}
+      <mesh position={[0, 0.4, -0.35]} rotation={[-0.5, 0, 0]} castShadow>
+        <capsuleGeometry args={[0.025, 0.2, 3, 4]} />
+        <meshStandardMaterial color="#5a5a5a" roughness={0.9} flatShading />
+      </mesh>
     </group>
   )
 }

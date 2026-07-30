@@ -9,7 +9,7 @@ import { Sky } from './sky'
 import { Animals, PondFish } from './animals'
 
 import { AirParticles, Fireflies } from './particles'
-import { GroundDetail, Mushrooms, Cattails } from './ground-detail'
+import { GroundDetail, Mushrooms, Cattails, SupplyCrates } from './ground-detail'
 import { MapBoundary } from './boundary'
 import { Rain, Snow, WeatherFog } from './weather'
 import { RockyClearing, DenseForestZone, BeachZone, SwampZone } from './map-zones'
@@ -205,6 +205,7 @@ export function GameScene({ placingItem, onPlace }: { placingItem?: string | nul
       <GroundDetail />
       <Mushrooms />
       <Cattails />
+      <SupplyCrates />
       <Forest />
       <Rocks />
       <MapBoundary />

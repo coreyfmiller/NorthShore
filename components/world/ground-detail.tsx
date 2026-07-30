@@ -294,3 +294,112 @@ export function Cattails() {
     </group>
   )
 }
+
+
+// Supply crates — random loot boxes scattered in biomes
+function SupplyCrate({ position }: { position: [number, number, number] }) {
+  const [opened, setOpened] = useState(false)
+  const addItem = useGameStore((s) => s.addItem)
+  const log = useGameStore((s) => s.log)
+
+  const handleClick = useCallback((e: any) => {
+    e.stopPropagation()
+    if (opened) return
+    // Check proximity
+    const playerPos = useGameStore.getState().playerPos
+    const dx = playerPos[0] - position[0]
+    const dz = playerPos[2] - position[2]
+    if (Math.sqrt(dx * dx + dz * dz) > 4) {
+      log('Get closer to open the crate.')
+      return
+    }
+    setOpened(true)
+    // Random loot table
+    const lootTable = [
+      () => { addItem('canned_food', 2); addItem('rope', 1); log('Found canned food and rope!') },
+      () => { addItem('arrows', 5); addItem('tinder', 3); log('Found arrows and tinder!') },
+      () => { addItem('firewood', 4); addItem('branches', 6); log('Found firewood and branches!') },
+      () => { addItem('fishing_line', 1); addItem('canned_food', 1); log('Found a fishing line and food!') },
+      () => { addItem('hide', 2); addItem('rope', 2); log('Found hides and rope!') },
+      () => { addItem('leather', 1); addItem('canned_food', 3); log('Found leather and lots of food!') },
+    ]
+    lootTable[Math.floor(Math.random() * lootTable.length)]()
+  }, [opened, position, addItem, log])
+
+  return (
+    <group position={position} onClick={handleClick}>
+      {opened ? (
+        // Open empty crate
+        <group>
+          <mesh position={[0, 0.15, 0]} castShadow>
+            <boxGeometry args={[0.6, 0.3, 0.4]} />
+            <meshStandardMaterial color="#5a4020" roughness={0.9} flatShading />
+          </mesh>
+          {/* Open lid leaning back */}
+          <mesh position={[0, 0.35, -0.2]} rotation={[-0.8, 0, 0]} castShadow>
+            <boxGeometry args={[0.62, 0.04, 0.4]} />
+            <meshStandardMaterial color="#6a4a25" roughness={0.9} flatShading />
+          </mesh>
+        </group>
+      ) : (
+        // Closed crate with marking
+        <group>
+          <mesh position={[0, 0.2, 0]} castShadow>
+            <boxGeometry args={[0.6, 0.4, 0.4]} />
+            <meshStandardMaterial color="#6a4a25" roughness={0.9} flatShading />
+          </mesh>
+          {/* Metal bands */}
+          <mesh position={[0, 0.2, 0.21]} castShadow>
+            <boxGeometry args={[0.62, 0.05, 0.02]} />
+            <meshStandardMaterial color="#4a4a4a" roughness={0.7} flatShading />
+          </mesh>
+          <mesh position={[0, 0.2, -0.21]} castShadow>
+            <boxGeometry args={[0.62, 0.05, 0.02]} />
+            <meshStandardMaterial color="#4a4a4a" roughness={0.7} flatShading />
+          </mesh>
+          {/* Question mark indicator */}
+          <mesh position={[0, 0.5, 0]}>
+            <sphereGeometry args={[0.06, 5, 4]} />
+            <meshStandardMaterial color="#ffcc00" roughness={0.5} emissive="#aa8800" emissiveIntensity={0.5} />
+          </mesh>
+        </group>
+      )}
+    </group>
+  )
+}
+
+export function SupplyCrates() {
+  const crates = useMemo(() => {
+    const result: [number, number, number][] = []
+    // Place supply crates in each biome area
+    const spots = [
+      // Rocky clearing area
+      { cx: -75, cz: -80, count: 2 },
+      // Dense forest
+      { cx: 85, cz: -75, count: 2 },
+      // Meadow
+      { cx: 0, cz: 100, count: 1 },
+      // Swamp
+      { cx: -90, cz: 25, count: 2 },
+      // Random spots around map
+      { cx: 50, cz: 70, count: 1 },
+      { cx: -60, cz: 50, count: 1 },
+    ]
+    for (const spot of spots) {
+      for (let i = 0; i < spot.count; i++) {
+        const x = spot.cx + (Math.random() - 0.5) * 15
+        const z = spot.cz + (Math.random() - 0.5) * 15
+        result.push([x, 0, z])
+      }
+    }
+    return result
+  }, [])
+
+  return (
+    <group>
+      {crates.map((pos, i) => (
+        <SupplyCrate key={`supply-${i}`} position={pos} />
+      ))}
+    </group>
+  )
+}
