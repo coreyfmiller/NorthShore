@@ -313,8 +313,15 @@ export function Cattails() {
 // Supply crates — random loot boxes scattered in biomes
 function SupplyCrate({ position }: { position: [number, number, number] }) {
   const [opened, setOpened] = useState(false)
+  const [openedOnDay, setOpenedOnDay] = useState(0)
+  const day = useGameStore((s) => s.day)
   const addItem = useGameStore((s) => s.addItem)
   const log = useGameStore((s) => s.log)
+
+  // Refill daily
+  if (opened && day > openedOnDay) {
+    setOpened(false)
+  }
 
   const handleClick = useCallback((e: any) => {
     e.stopPropagation()
@@ -328,6 +335,7 @@ function SupplyCrate({ position }: { position: [number, number, number] }) {
       return
     }
     setOpened(true)
+    setOpenedOnDay(useGameStore.getState().day)
     // Random loot table
     const lootTable = [
       () => { addItem('canned_food', 2); addItem('rope', 1); log('Found canned food and rope!') },

@@ -19,7 +19,7 @@ export function HUD() {
             <p>Season: {season}</p>
           </div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => { localStorage.removeItem('northshore_save'); window.location.reload() }}
             className="mt-8 rounded-lg bg-red-600/80 px-8 py-3 text-white font-medium hover:bg-red-500 transition-colors"
           >
             Try Again

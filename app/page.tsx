@@ -7,6 +7,7 @@ import { Inventory } from '@/components/ui/inventory'
 import { CrateUI } from '@/components/ui/crate-ui'
 import { useState, useEffect } from 'react'
 import { useGameStore } from '@/lib/game-store'
+import { saveGame, loadGame, hasSave } from '@/lib/save-system'
 
 const GameScene = dynamic(
   () => import('@/components/world/scene').then((mod) => mod.GameScene),
@@ -17,6 +18,24 @@ export default function Home() {
   const [craftOpen, setCraftOpen] = useState(false)
   const [inventoryOpen, setInventoryOpen] = useState(false)
   const [placingItem, setPlacingItem] = useState<string | null>(null)
+
+  // Load save on mount
+  useEffect(() => {
+    if (hasSave()) {
+      loadGame()
+      useGameStore.getState().log('Game loaded.')
+    }
+  }, [])
+
+  // Autosave every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!useGameStore.getState().isDead) {
+        saveGame()
+      }
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
