@@ -57,6 +57,16 @@ function Tree({ position, type, scale, lean, leanDir, onChop }: {
       state.log('Need an axe to chop trees.')
       return
     }
+    // Must be close to the tree
+    const playerPos = state.playerPos
+    const treePos = position
+    const dx = playerPos[0] - treePos[0]
+    const dz = playerPos[2] - treePos[2]
+    const dist = Math.sqrt(dx * dx + dz * dz)
+    if (dist > 4) {
+      state.log('Get closer to chop the tree.')
+      return
+    }
     useGameStore.setState({ playerAction: 'chopping' })
     setTimeout(() => useGameStore.setState({ playerAction: 'idle' }), 600)
     playChop()
