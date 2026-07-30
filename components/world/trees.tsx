@@ -343,6 +343,14 @@ function BerryBush({ position, hasBerries: initialBerries, scale, onPick }: {
   const handleClick = useCallback((e: any) => {
     e.stopPropagation()
     if (!hasBerries) return
+    // Must be close
+    const playerPos = useGameStore.getState().playerPos
+    const dx = playerPos[0] - position[0]
+    const dz = playerPos[2] - position[2]
+    if (Math.sqrt(dx * dx + dz * dz) > 4) {
+      useGameStore.getState().log('Get closer to pick berries.')
+      return
+    }
     setHasBerries(false)
     onPick()
     setTimeout(() => setHasBerries(true), 60000)
