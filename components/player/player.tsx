@@ -146,9 +146,14 @@ export function Player({ placingItem, onPlace }: { placingItem?: string | null; 
       if (e.code === 'KeyF') eat()
       if (e.code === 'KeyR') drink()
       if (e.code === 'KeyE') {
-        // Context-aware: fish if near water, otherwise nothing (trees use click)
+        // Context-aware: fish if near water, otherwise try to pick up nearby items
         const state = useGameStore.getState()
-        if (state.nearWater) startFishing()
+        if (state.nearWater) {
+          startFishing()
+        } else {
+          // Dispatch a custom event for ground items to respond to
+          window.dispatchEvent(new CustomEvent('player-interact', { detail: { pos: state.playerPos } }))
+        }
       }
       if (e.code === 'KeyC') {
         // Handled by page-level craft menu now

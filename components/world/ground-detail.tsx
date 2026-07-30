@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useGameStore } from '@/lib/game-store'
 import { playPickup } from '@/lib/audio'
 
@@ -15,12 +15,33 @@ interface DetailItem {
 function PickableItem({ item, onPick }: { item: DetailItem; onPick: () => void }) {
   const [visible, setVisible] = useState(true)
 
-  const handleClick = useCallback((e: any) => {
-    e.stopPropagation()
+  const doPick = useCallback(() => {
+    if (!visible) return
     setVisible(false)
     playPickup()
     onPick()
-  }, [onPick])
+  }, [visible, onPick])
+
+  const handleClick = useCallback((e: any) => {
+    e.stopPropagation()
+    doPick()
+  }, [doPick])
+
+  // Listen for E key interact
+  useEffect(() => {
+    const onInteract = (e: Event) => {
+      if (!visible) return
+      const detail = (e as CustomEvent).detail
+      const pos = detail.pos as [number, number, number]
+      const dx = pos[0] - item.pos[0]
+      const dz = pos[2] - item.pos[2]
+      if (Math.sqrt(dx * dx + dz * dz) < 3) {
+        doPick()
+      }
+    }
+    window.addEventListener('player-interact', onInteract)
+    return () => window.removeEventListener('player-interact', onInteract)
+  }, [visible, item.pos, doPick])
 
   if (!visible) return null
 
