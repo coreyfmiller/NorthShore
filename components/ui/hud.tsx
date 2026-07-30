@@ -70,14 +70,8 @@ export function HUD() {
         )}
       </div>
 
-      {/* Controls */}
-      <div className="fixed bottom-4 left-4 z-40 font-mono text-[10px] text-white/50 bg-black/40 rounded-lg p-2 backdrop-blur-sm space-y-0.5">
-        <div>WASD: move | Shift: sprint</div>
-        <div>Click tree: chop (axe) | Click animal: hunt (knife)</div>
-        <div>E near water: fish | F: eat food</div>
-        <div>B: backpack | C: craft menu | R: drink (near water)</div>
-        <div>T/Y: time speed | Click fire: cook | Click shelter: sleep</div>
-      </div>
+      {/* Controls toggle */}
+      <ControlsPanel />
 
       {/* Compass */}
       <Compass />
@@ -206,6 +200,68 @@ function Hotbar() {
           <span className="text-[8px] text-white/40">{slot.key}</span>
         </div>
       ))}
+    </div>
+  )
+}
+
+
+function ControlsPanel() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="fixed bottom-4 left-4 z-40">
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="bg-black/60 backdrop-blur-sm text-white/70 text-xs px-3 py-1.5 rounded-lg hover:bg-black/80 hover:text-white transition-colors"
+        >
+          Show Controls
+        </button>
+      ) : (
+        <div className="bg-black/70 backdrop-blur-sm rounded-lg p-3 text-white/80 font-mono text-[11px] space-y-2 max-w-xs">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-white text-xs font-semibold">Controls</span>
+            <button onClick={() => setOpen(false)} className="text-white/50 hover:text-white text-xs">✕</button>
+          </div>
+          <div className="space-y-1.5">
+            <div className="text-white/50 text-[9px] uppercase tracking-wider">Movement</div>
+            <div>W/A/S/D — Move</div>
+            <div>Shift — Sprint (uses stamina)</div>
+            <div>Right-click drag — Rotate camera</div>
+            <div>Scroll wheel — Zoom in/out</div>
+          </div>
+          <div className="space-y-1.5">
+            <div className="text-white/50 text-[9px] uppercase tracking-wider">Actions</div>
+            <div>Click tree — Chop (need axe, be close)</div>
+            <div>Click deer/moose — Shoot (need bow + arrows)</div>
+            <div>Click downed animal — Harvest (need knife)</div>
+            <div>Click bush — Pick berries</div>
+            <div>Click mushroom/cattail — Gather</div>
+            <div>Click ground items — Pick up</div>
+            <div>Click campfire — Cook raw meat</div>
+            <div>Click shelter/cabin — Sleep</div>
+            <div>Click storage crate — Open storage</div>
+            <div>Right-click structure — Rotate it</div>
+          </div>
+          <div className="space-y-1.5">
+            <div className="text-white/50 text-[9px] uppercase tracking-wider">Keys</div>
+            <div>B — Open backpack</div>
+            <div>C — Open craft menu</div>
+            <div>E — Fish (near water)</div>
+            <div>F — Quick eat best food</div>
+            <div>R — Drink (near water)</div>
+            <div>T — Speed up time</div>
+            <div>Y — Slow down time</div>
+            <div>Q/E — Rotate item during placement</div>
+            <div>Escape — Close menus / cancel placement</div>
+          </div>
+          <div className="space-y-1.5">
+            <div className="text-white/50 text-[9px] uppercase tracking-wider">Hotbar</div>
+            <div>1 — Eat | 2 — Drink | 3 — Fish</div>
+            <div>4 — Axe | 5 — Torch</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
