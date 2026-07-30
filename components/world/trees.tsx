@@ -451,6 +451,21 @@ export function Forest() {
     })
   }, [waterZones])
 
+  // Biome zones — don't spawn regular trees/objects here
+  const isInBiome = useCallback((x: number, z: number) => {
+    const biomes = [
+      { cx: -75, cz: -80, radius: 22 },  // Rocky clearing
+      { cx: 85, cz: -75, radius: 20 },   // Dense forest
+      { cx: 0, cz: 100, radius: 20 },    // Meadow
+      { cx: -90, cz: 25, radius: 20 },   // Swamp
+    ]
+    return biomes.some((b) => {
+      const dx = x - b.cx
+      const dz = z - b.cz
+      return Math.sqrt(dx * dx + dz * dz) < b.radius
+    })
+  }, [])
+
   const trees = useMemo(() => {
     const result: TreeData[] = []
     const types: TreeData['type'][] = ['spruce', 'spruce', 'spruce', 'birch', 'pine', 'pine', 'maple', 'cedar', 'cedar']
@@ -460,6 +475,7 @@ export function Forest() {
       const z = (Math.random() - 0.5) * 240
       if (Math.abs(x) < 8 && Math.abs(z) < 8) continue
       if (isInWater(x, z)) continue
+      if (isInBiome(x, z)) continue
 
       const y = getTerrainHeight(x, z)
       const type = types[Math.floor(Math.random() * types.length)]
@@ -469,7 +485,7 @@ export function Forest() {
       result.push({ pos: [x, y, z], type, scale, id: i, lean, leanDir })
     }
     return result
-  }, [isInWater])
+  }, [isInWater, isInBiome])
 
   const bushes = useMemo(() => {
     const result: BushData[] = []
@@ -477,12 +493,13 @@ export function Forest() {
       const x = (Math.random() - 0.5) * 160
       const z = (Math.random() - 0.5) * 160
       if (isInWater(x, z)) continue
+      if (isInBiome(x, z)) continue
       const y = getTerrainHeight(x, z)
       const scale = 0.7 + Math.random() * 0.5
       result.push({ pos: [x, y, z], id: i, hasBerries: true, scale })
     }
     return result
-  }, [isInWater])
+  }, [isInWater, isInBiome])
 
   const deadTrees = useMemo(() => {
     const result: { pos: [number, number, number]; rot: number }[] = []

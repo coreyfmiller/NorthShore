@@ -1290,60 +1290,84 @@ function Wolf({ startPos, id }: { startPos: [number, number, number]; id: number
 
   return (
     <group ref={groupRef} position={startPos} onClick={handleClick}>
-      {/* Body */}
-      <mesh position={[0, 0.4, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <capsuleGeometry args={[0.15, 0.5, 4, 6]} />
-        <meshStandardMaterial color="#5a5a5a" roughness={0.9} flatShading />
+      {/* Body — large, muscular */}
+      <mesh position={[0, 0.55, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <capsuleGeometry args={[0.22, 0.7, 5, 7]} />
+        <meshStandardMaterial color="#3a3a3a" roughness={0.85} flatShading />
       </mesh>
-      {/* Head */}
-      <mesh position={[0, 0.5, 0.35]} castShadow>
-        <sphereGeometry args={[0.12, 6, 5]} />
-        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      {/* Chest — thicker at front */}
+      <mesh position={[0, 0.55, 0.25]} castShadow>
+        <sphereGeometry args={[0.2, 6, 5]} />
+        <meshStandardMaterial color="#3a3a3a" roughness={0.85} flatShading />
       </mesh>
-      {/* Snout */}
-      <mesh position={[0, 0.47, 0.47]} castShadow>
-        <boxGeometry args={[0.08, 0.06, 0.12]} />
-        <meshStandardMaterial color="#3a3a3a" roughness={0.9} flatShading />
+      {/* Neck — thick and muscular */}
+      <mesh position={[0, 0.6, 0.4]} rotation={[0.4, 0, 0]} castShadow>
+        <capsuleGeometry args={[0.12, 0.15, 4, 5]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} flatShading />
       </mesh>
-      {/* Ears */}
-      <mesh position={[0.06, 0.6, 0.32]} castShadow>
-        <coneGeometry args={[0.03, 0.07, 4]} />
-        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      {/* Head — angular and menacing */}
+      <mesh position={[0, 0.68, 0.55]} castShadow>
+        <boxGeometry args={[0.18, 0.14, 0.2]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} flatShading />
       </mesh>
-      <mesh position={[-0.06, 0.6, 0.32]} castShadow>
-        <coneGeometry args={[0.03, 0.07, 4]} />
-        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      {/* Snout — long and pointed */}
+      <mesh position={[0, 0.64, 0.7]} castShadow>
+        <boxGeometry args={[0.1, 0.08, 0.18]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.85} flatShading />
       </mesh>
-      {/* Eyes — yellow */}
-      <mesh position={[0.05, 0.52, 0.43]}>
-        <sphereGeometry args={[0.02, 4, 4]} />
-        <meshStandardMaterial color="#c0a020" roughness={0.3} />
+      {/* Nose */}
+      <mesh position={[0, 0.63, 0.79]}>
+        <sphereGeometry args={[0.03, 4, 4]} />
+        <meshStandardMaterial color="#0a0a0a" roughness={0.5} />
       </mesh>
-      <mesh position={[-0.05, 0.52, 0.43]}>
-        <sphereGeometry args={[0.02, 4, 4]} />
-        <meshStandardMaterial color="#c0a020" roughness={0.3} />
+      {/* Jaw line */}
+      <mesh position={[0, 0.6, 0.68]} castShadow>
+        <boxGeometry args={[0.09, 0.04, 0.14]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.85} flatShading />
       </mesh>
-      {/* Legs */}
-      <mesh position={[0.08, 0.15, 0.2]} castShadow>
-        <capsuleGeometry args={[0.03, 0.2, 3, 4]} />
-        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      {/* Ears — tall and pointed */}
+      <mesh position={[0.07, 0.8, 0.5]} castShadow>
+        <coneGeometry args={[0.04, 0.1, 4]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} flatShading />
       </mesh>
-      <mesh position={[-0.08, 0.15, 0.2]} castShadow>
-        <capsuleGeometry args={[0.03, 0.2, 3, 4]} />
-        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      <mesh position={[-0.07, 0.8, 0.5]} castShadow>
+        <coneGeometry args={[0.04, 0.1, 4]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} flatShading />
       </mesh>
-      <mesh position={[0.08, 0.15, -0.15]} castShadow>
-        <capsuleGeometry args={[0.03, 0.2, 3, 4]} />
-        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      {/* Eyes — glowing yellow/orange, menacing */}
+      <mesh position={[0.06, 0.7, 0.63]}>
+        <sphereGeometry args={[0.025, 5, 4]} />
+        <meshStandardMaterial color="#e0a010" roughness={0.2} emissive="#aa7000" emissiveIntensity={0.8} />
       </mesh>
-      <mesh position={[-0.08, 0.15, -0.15]} castShadow>
-        <capsuleGeometry args={[0.03, 0.2, 3, 4]} />
-        <meshStandardMaterial color="#4a4a4a" roughness={0.9} flatShading />
+      <mesh position={[-0.06, 0.7, 0.63]}>
+        <sphereGeometry args={[0.025, 5, 4]} />
+        <meshStandardMaterial color="#e0a010" roughness={0.2} emissive="#aa7000" emissiveIntensity={0.8} />
       </mesh>
-      {/* Tail */}
-      <mesh position={[0, 0.4, -0.35]} rotation={[-0.5, 0, 0]} castShadow>
-        <capsuleGeometry args={[0.025, 0.2, 3, 4]} />
-        <meshStandardMaterial color="#5a5a5a" roughness={0.9} flatShading />
+      {/* Legs — longer, powerful */}
+      <mesh position={[0.1, 0.22, 0.25]} castShadow>
+        <capsuleGeometry args={[0.04, 0.35, 3, 5]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} flatShading />
+      </mesh>
+      <mesh position={[-0.1, 0.22, 0.25]} castShadow>
+        <capsuleGeometry args={[0.04, 0.35, 3, 5]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} flatShading />
+      </mesh>
+      <mesh position={[0.1, 0.22, -0.2]} castShadow>
+        <capsuleGeometry args={[0.04, 0.35, 3, 5]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} flatShading />
+      </mesh>
+      <mesh position={[-0.1, 0.22, -0.2]} castShadow>
+        <capsuleGeometry args={[0.04, 0.35, 3, 5]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} flatShading />
+      </mesh>
+      {/* Tail — bushy, held low */}
+      <mesh position={[0, 0.45, -0.45]} rotation={[-0.7, 0, 0]} castShadow>
+        <capsuleGeometry args={[0.04, 0.25, 4, 5]} />
+        <meshStandardMaterial color="#3a3a3a" roughness={0.85} flatShading />
+      </mesh>
+      <mesh position={[0, 0.38, -0.55]} castShadow>
+        <sphereGeometry args={[0.04, 4, 4]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.85} flatShading />
       </mesh>
     </group>
   )

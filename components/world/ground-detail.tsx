@@ -73,6 +73,14 @@ export function GroundDetail() {
       })
       if (inWater) continue
 
+      // Skip biome zones
+      const biomes = [
+        { cx: -75, cz: -80, r: 22 }, { cx: 85, cz: -75, r: 20 },
+        { cx: 0, cz: 100, r: 20 }, { cx: -90, cz: 25, r: 20 },
+      ]
+      const inBiome = biomes.some((b) => Math.sqrt((x - b.cx) ** 2 + (z - b.cz) ** 2) < b.r)
+      if (inBiome) continue
+
       const type = Math.random() < 0.4 ? 'rock' : Math.random() < 0.6 ? 'stick' : 'leaf'
       const rot = Math.random() * Math.PI * 2
       const scale = 0.3 + Math.random() * 0.4
@@ -174,6 +182,12 @@ export function Mushrooms() {
         return Math.sqrt(dx * dx + dz * dz) < zone.radius
       })
       if (inWater) continue
+
+      const biomes = [
+        { cx: -75, cz: -80, r: 22 }, { cx: 85, cz: -75, r: 20 },
+        { cx: 0, cz: 100, r: 20 }, { cx: -90, cz: 25, r: 20 },
+      ]
+      if (biomes.some((b) => Math.sqrt((x - b.cx) ** 2 + (z - b.cz) ** 2) < b.r)) continue
 
       const poisonous = Math.random() < 0.25 // 25% chance poisonous
       const scale = 0.8 + Math.random() * 0.6
