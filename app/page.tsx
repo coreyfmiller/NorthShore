@@ -39,9 +39,9 @@ export default function Home() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'KeyC' && !craftOpen && !inventoryOpen) {
-        setCraftOpen(true)
-      } else if (e.code === 'KeyB' && !craftOpen && !inventoryOpen) {
+      if (e.code === 'KeyC' && !inventoryOpen) {
+        setCraftOpen((prev) => !prev)
+      } else if (e.code === 'KeyB' && !craftOpen) {
         setInventoryOpen(true)
       } else if (e.code === 'Escape') {
         setCraftOpen(false)
@@ -104,7 +104,6 @@ export default function Home() {
       const { item, qty } = inventoryItems[recipeId]
       state.addItem(item, qty)
       state.log(`Crafted ${recipeId.replace(/_/g, ' ')}!`)
-      setCraftOpen(false)
       return
     }
 

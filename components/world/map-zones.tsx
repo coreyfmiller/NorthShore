@@ -95,67 +95,104 @@ export function DenseForestZone() {
   )
 }
 
-// Open meadow clearing — wildflowers and tall grass in a forest gap
+// Birch grove — tall white birch trees, fallen logs, ferns, dappled light feel
 export function BeachZone() {
-  const flowers = useMemo(() => {
-    const result: { pos: [number, number, number]; color: string; scale: number }[] = []
+  const birches = useMemo(() => {
+    const result: { pos: [number, number, number]; scale: number; rot: number; lean: number }[] = []
     const cx = 0, cz = 100
-    const colors = ['#d44080', '#e0a020', '#d0d040', '#8040c0', '#e06030', '#ffffff']
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 25; i++) {
       const angle = Math.random() * Math.PI * 2
-      const dist = Math.random() * 17
+      const dist = 2 + Math.random() * 16
       const x = cx + Math.cos(angle) * dist
       const z = cz + Math.sin(angle) * dist
-      result.push({ pos: [x, 0, z], color: colors[Math.floor(Math.random() * colors.length)], scale: 0.6 + Math.random() * 0.5 })
+      result.push({ pos: [x, 0, z], scale: 0.8 + Math.random() * 0.3, rot: Math.random() * Math.PI * 2, lean: (Math.random() - 0.5) * 0.06 })
     }
     return result
   }, [])
 
-  const tallGrass = useMemo(() => {
-    const result: { pos: [number, number, number]; rot: number; scale: number }[] = []
+  const logs = useMemo(() => {
+    const result: { pos: [number, number, number]; rot: number; len: number }[] = []
     const cx = 0, cz = 100
-    for (let i = 0; i < 35; i++) {
+    for (let i = 0; i < 6; i++) {
       const angle = Math.random() * Math.PI * 2
-      const dist = 8 + Math.random() * 12
-      const x = cx + Math.cos(angle) * dist
-      const z = cz + Math.sin(angle) * dist
-      result.push({ pos: [x, 0, z], rot: Math.random() * Math.PI, scale: 0.7 + Math.random() * 0.4 })
+      const dist = 3 + Math.random() * 14
+      result.push({
+        pos: [cx + Math.cos(angle) * dist, 0.1, cz + Math.sin(angle) * dist],
+        rot: Math.random() * Math.PI,
+        len: 1.5 + Math.random() * 2,
+      })
     }
     return result
   }, [])
 
   return (
     <group>
-      {/* Lighter green ground — organic shape */}
+      {/* Lighter ground with leaf litter */}
       <mesh position={[0, 0.014, 100]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[20, 24]} />
-        <meshStandardMaterial color="#3a6a28" roughness={1} flatShading />
+        <meshStandardMaterial color="#3a6828" roughness={1} flatShading />
       </mesh>
-      {/* Inner lighter patch */}
       <mesh position={[2, 0.016, 98]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <circleGeometry args={[12, 16]} />
-        <meshStandardMaterial color="#4a7a30" roughness={1} flatShading />
+        <circleGeometry args={[14, 16]} />
+        <meshStandardMaterial color="#4a5530" roughness={1} flatShading />
       </mesh>
-      {/* Wildflowers */}
-      {flowers.map((f, i) => (
-        <group key={`flower-${i}`} position={f.pos} scale={f.scale}>
-          <mesh position={[0, 0.15, 0]} castShadow>
-            <cylinderGeometry args={[0.008, 0.01, 0.15, 3]} />
-            <meshStandardMaterial color="#3a6020" roughness={0.9} flatShading />
+
+      {/* Tall birch trees */}
+      {birches.map((tree, i) => (
+        <group key={`birch-${i}`} position={tree.pos} scale={tree.scale} rotation={[tree.lean, tree.rot, tree.lean]}>
+          {/* White trunk with dark marks */}
+          <mesh position={[0, 3, 0]} castShadow>
+            <cylinderGeometry args={[0.08, 0.14, 6, 6]} />
+            <meshStandardMaterial color="#e8e0d0" roughness={0.85} flatShading />
           </mesh>
-          <mesh position={[0, 0.24, 0]}>
-            <sphereGeometry args={[0.04, 5, 4]} />
-            <meshStandardMaterial color={f.color} roughness={0.7} flatShading />
+          {/* Bark marks */}
+          <mesh position={[0.06, 2.5, 0.05]}>
+            <boxGeometry args={[0.03, 0.25, 0.02]} />
+            <meshStandardMaterial color="#2a2520" roughness={1} flatShading />
+          </mesh>
+          <mesh position={[-0.04, 3.8, -0.03]}>
+            <boxGeometry args={[0.025, 0.2, 0.02]} />
+            <meshStandardMaterial color="#2a2520" roughness={1} flatShading />
+          </mesh>
+          <mesh position={[0.03, 4.5, 0.04]}>
+            <boxGeometry args={[0.02, 0.15, 0.02]} />
+            <meshStandardMaterial color="#2a2520" roughness={1} flatShading />
+          </mesh>
+          {/* Canopy — golden green */}
+          <mesh position={[0, 6, 0]} castShadow>
+            <icosahedronGeometry args={[1.4, 1]} />
+            <meshStandardMaterial color="#6aaa40" roughness={0.85} flatShading />
+          </mesh>
+          <mesh position={[0.6, 6.3, 0.3]} castShadow>
+            <icosahedronGeometry args={[0.9, 1]} />
+            <meshStandardMaterial color="#7ab848" roughness={0.85} flatShading />
+          </mesh>
+          <mesh position={[-0.4, 5.7, -0.4]} castShadow>
+            <icosahedronGeometry args={[0.8, 1]} />
+            <meshStandardMaterial color="#5a9a35" roughness={0.85} flatShading />
           </mesh>
         </group>
       ))}
-      {/* Tall grass at edges */}
-      {tallGrass.map((g, i) => (
-        <mesh key={`tgrass-${i}`} position={[g.pos[0], 0.2, g.pos[2]]} rotation={[0, g.rot, 0]} scale={g.scale} castShadow>
-          <coneGeometry args={[0.06, 0.4, 4]} />
-          <meshStandardMaterial color="#5a8a35" roughness={0.9} flatShading />
+
+      {/* Fallen logs */}
+      {logs.map((log, i) => (
+        <mesh key={`log-${i}`} position={log.pos} rotation={[0, log.rot, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.08, 0.1, log.len, 6]} />
+          <meshStandardMaterial color="#d8d0c0" roughness={0.9} flatShading />
         </mesh>
       ))}
+
+      {/* Ground ferns */}
+      {Array.from({ length: 20 }).map((_, i) => {
+        const angle = Math.random() * Math.PI * 2
+        const dist = 2 + Math.random() * 16
+        return (
+          <mesh key={`fern-${i}`} position={[Math.cos(angle) * dist, 0.15, 100 + Math.sin(angle) * dist]} rotation={[0, Math.random() * Math.PI, 0]} castShadow>
+            <coneGeometry args={[0.15, 0.3, 5]} />
+            <meshStandardMaterial color="#2a6a20" roughness={0.9} flatShading />
+          </mesh>
+        )
+      })}
     </group>
   )
 }
