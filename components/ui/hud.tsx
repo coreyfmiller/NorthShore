@@ -37,37 +37,42 @@ export function HUD() {
       {/* Low stat warnings */}
       <Warnings health={health} hunger={hunger} thirst={thirst} bodyTemp={bodyTemp} stamina={stamina} />
 
-      {/* Stats */}
-      <div className="fixed top-4 left-4 z-40 font-mono text-xs text-white/90 bg-black/50 rounded-lg p-3 backdrop-blur-sm space-y-1">
-        <div>Day {day} — {timeStr} — {season} — {weather} {timeSpeed === 0 && '(paused)'}</div>
-        <div className="flex gap-3">
-          <span className={health < 30 ? 'text-red-400' : ''}>HP: {Math.round(health)}</span>
-          <span className={hunger < 20 ? 'text-red-400' : hunger < 40 ? 'text-yellow-400' : ''}>Hunger: {Math.round(hunger)}</span>
-          <span className={thirst < 20 ? 'text-red-400' : thirst < 40 ? 'text-yellow-400' : ''}>Thirst: {Math.round(thirst)}</span>
-        </div>
-        <div className="flex gap-3">
-          <span className={bodyTemp < 35 ? 'text-blue-400' : ''}>Body: {bodyTemp.toFixed(1)}°C</span>
-          <span>Air: {Math.round(airTemp)}°C</span>
-          <span className={stamina < 20 ? 'text-yellow-400' : ''}>Stam: {Math.round(stamina)}</span>
-          {nearFire && <span className="text-orange-400">🔥 Warm</span>}
-        </div>
-      </div>
-
-      {/* Inventory */}
-      <div className="fixed top-4 right-4 z-40 font-mono text-xs text-white/90 bg-black/50 rounded-lg p-3 backdrop-blur-sm">
-        <div className="text-white/60 mb-1">Inventory</div>
-        {itemList.length === 0 ? (
-          <div className="text-white/40">Empty</div>
-        ) : (
-          <div className="space-y-0.5 max-h-48 overflow-y-auto">
-            {itemList.map(([id, qty]) => (
-              <div key={id} className="flex justify-between gap-4">
-                <span>{id.replace(/_/g, ' ')}</span>
-                <span className="text-white/60">x{qty}</span>
-              </div>
-            ))}
+      {/* HUD wrapper — scales to fit smaller screens */}
+      <div className="fixed inset-0 z-40 pointer-events-none origin-top-left scale-100 sm:scale-100 md:scale-100 lg:scale-100 xl:scale-100 2xl:scale-100 max-[600px]:scale-[0.7] max-[800px]:scale-[0.85]">
+        <div className="pointer-events-auto">
+          {/* Stats */}
+          <div className="fixed top-3 left-3 z-40 font-mono text-[11px] text-white/90 bg-black/50 rounded-lg p-2.5 backdrop-blur-sm space-y-1 max-w-[280px]">
+            <div className="truncate">Day {day} — {timeStr} — {season} — {weather} {timeSpeed === 0 && '(paused)'}</div>
+            <div className="flex gap-2 flex-wrap">
+              <span className={health < 30 ? 'text-red-400' : ''}>HP: {Math.round(health)}</span>
+              <span className={hunger < 20 ? 'text-red-400' : hunger < 40 ? 'text-yellow-400' : ''}>Hunger: {Math.round(hunger)}</span>
+              <span className={thirst < 20 ? 'text-red-400' : thirst < 40 ? 'text-yellow-400' : ''}>Thirst: {Math.round(thirst)}</span>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <span className={bodyTemp < 35 ? 'text-blue-400' : ''}>Body: {bodyTemp.toFixed(1)}°C</span>
+              <span>Air: {Math.round(airTemp)}°C</span>
+              <span className={stamina < 20 ? 'text-yellow-400' : ''}>Stam: {Math.round(stamina)}</span>
+              {nearFire && <span className="text-orange-400">🔥</span>}
+            </div>
           </div>
-        )}
+
+          {/* Inventory */}
+          <div className="fixed top-3 right-3 z-40 font-mono text-[11px] text-white/90 bg-black/50 rounded-lg p-2.5 backdrop-blur-sm max-w-[200px]">
+            <div className="text-white/60 mb-1">Inventory</div>
+            {itemList.length === 0 ? (
+              <div className="text-white/40">Empty</div>
+            ) : (
+              <div className="space-y-0.5 max-h-36 overflow-y-auto">
+                {itemList.map(([id, qty]) => (
+                  <div key={id} className="flex justify-between gap-3">
+                    <span className="truncate">{id.replace(/_/g, ' ')}</span>
+                    <span className="text-white/60 shrink-0">x{qty}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Controls toggle */}
