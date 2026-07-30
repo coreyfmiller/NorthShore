@@ -292,6 +292,7 @@ function Moose({ startPos, id, onKill }: { startPos: [number, number, number]; i
   const groupRef = useRef<THREE.Group>(null)
   const [health, setHealth] = useState(2)
   const [alive, setAlive] = useState(true)
+  const [downed, setDowned] = useState(false)
   const headRef = useRef<THREE.Group>(null)
   const legLF = useRef<THREE.Mesh>(null)
   const legRF = useRef<THREE.Mesh>(null)
@@ -315,6 +316,19 @@ function Moose({ startPos, id, onKill }: { startPos: [number, number, number]; i
     e.stopPropagation()
     if (!alive) return
     const st = useGameStore.getState()
+
+    // If downed — harvest with knife
+    if (downed) {
+      if (!st.hasItem('knife')) {
+        st.log('Need a knife to harvest.')
+        return
+      }
+      setAlive(false)
+      onKill()
+      setTimeout(() => { setAlive(true); setHealth(2); setDowned(false) }, 180000)
+      return
+    }
+
     const hasBow = st.hasItem('bow') && st.hasItem('arrows')
     if (!hasBow) {
       st.log('Need a bow and arrows to hunt moose.')
@@ -326,16 +340,23 @@ function Moose({ startPos, id, onKill }: { startPos: [number, number, number]; i
     const h = health - 1
     setHealth(h)
     if (h <= 0) {
-      setAlive(false)
-      onKill()
-      setTimeout(() => { setAlive(true); setHealth(2) }, 180000)
+      setDowned(true)
+      st.log('Moose is down! Click with knife to harvest.')
     } else {
       st.log('Hit! The moose is wounded. One more shot!')
     }
-  }, [alive, health, onKill])
+  }, [alive, health, downed, onKill])
 
   useFrame((_, delta) => {
     if (!groupRef.current || !alive) return
+
+    // When downed, fall to side
+    if (downed) {
+      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, Math.PI / 2, 0.08)
+      return
+    }
+    groupRef.current.rotation.z = 0
+
     const s = state.current
     const playerPos = useGameStore.getState().playerPos
 
@@ -585,6 +606,7 @@ function Moose({ startPos, id, onKill }: { startPos: [number, number, number]; i
 function Deer({ startPos, id, onCatch }: { startPos: [number, number, number]; id: number; onCatch: () => void }) {
   const groupRef = useRef<THREE.Group>(null)
   const [alive, setAlive] = useState(true)
+  const [downed, setDowned] = useState(false)
   const legLF = useRef<THREE.Mesh>(null)
   const legRF = useRef<THREE.Mesh>(null)
   const legLB = useRef<THREE.Mesh>(null)
@@ -603,6 +625,14 @@ function Deer({ startPos, id, onCatch }: { startPos: [number, number, number]; i
 
   useFrame((_, delta) => {
     if (!groupRef.current || !alive) return
+
+    // When downed, fall to side and stop moving
+    if (downed) {
+      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, Math.PI / 2, 0.1)
+      return
+    }
+    groupRef.current.rotation.z = 0
+
     const s = state.current
     const playerPos = useGameStore.getState().playerPos
 
@@ -701,7 +731,22 @@ function Deer({ startPos, id, onCatch }: { startPos: [number, number, number]; i
 
   const handleClick = useCallback((e: any) => {
     e.stopPropagation()
+    if (!alive) return
     const state = useGameStore.getState()
+
+    // If downed — harvest with knife
+    if (downed) {
+      if (!state.hasItem('knife')) {
+        state.log('Need a knife to harvest.')
+        return
+      }
+      setAlive(false)
+      onCatch()
+      setTimeout(() => { setAlive(true); setDowned(false) }, 120000)
+      return
+    }
+
+    // Shoot to down
     const hasBow = state.hasItem('bow') && state.hasItem('arrows')
     if (!hasBow) {
       state.log('Need a bow and arrows to hunt deer.')
@@ -710,10 +755,9 @@ function Deer({ startPos, id, onCatch }: { startPos: [number, number, number]; i
     state.removeItem('arrows', 1)
     useGameStore.setState({ playerAction: 'shooting' })
     setTimeout(() => useGameStore.setState({ playerAction: 'idle' }), 500)
-    setAlive(false)
-    onCatch()
-    setTimeout(() => setAlive(true), 120000)
-  }, [onCatch])
+    setDowned(true)
+    state.log('Deer is down! Click again with knife to harvest.')
+  }, [alive, downed, onCatch])
 
   if (!alive) return null
 
